@@ -25,7 +25,7 @@
 /obj/
 
 # ========================
-# Compiled artifacts
+# Compiled artifacts (exclude from build directories only)
 # ========================
 *.obj
 *.pch
@@ -33,7 +33,6 @@
 *.ilk
 *.idb
 *.exp
-*.lib
 *.dll
 *.exe
 *.so
@@ -90,3 +89,8 @@ Makefile
 !*.hpp
 !*.c
 !*.cc
+
+# ========================
+# Keep .lib files in packages (NuGet dependencies)
+# ========================
+!packages/**/*.lib
