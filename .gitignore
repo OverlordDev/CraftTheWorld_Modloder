@@ -15,14 +15,14 @@
 # ========================
 # Build output directories
 # ========================
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Bb]in/
-[Oo]bj/
-[Bb]uild/
-out/
+/Debug/
+/Release/
+/x64/
+/x86/
+/build/
+/out/
+/bin/
+/obj/
 
 # ========================
 # Compiled artifacts
@@ -72,8 +72,13 @@ packages/*/
 # ========================
 # Generated / backup
 # ========================
-imgui_backup/
-classgame/
+/CTW_Moodloader/imgui_backup/
+/CTW_Moodloader/classgame/
+/CTW_Moodloader/Debug/
+/CTW_Moodloader/Release/
+/CTW_Moodloader/x64/
+/CTW_Moodloader/x86/
+/CTW_Moodloader/build/
 
 # ========================
 # Keep important source files
