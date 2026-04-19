@@ -2,11 +2,15 @@
 # Visual Studio / IDE
 # ========================
 .vs/
+.vscode/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 *.vcxproj.user
+*.vcxproj.filters.user
+*.VC.db
+*.VC.VC.opendb
 
 # ========================
 # Build output directories
@@ -18,6 +22,7 @@ x86/
 [Bb]in/
 [Oo]bj/
 [Bb]uild/
+out/
 
 # ========================
 # Compiled artifacts
@@ -31,6 +36,8 @@ x86/
 *.lib
 *.dll
 *.exe
+*.so
+*.dylib
 
 # ========================
 # Log / temp files
@@ -40,20 +47,42 @@ x86/
 *.ncb
 *.aps
 *.tmp
+*.temp
+*.lastbuildstate
 Thumbs.db
 .DS_Store
 
 # ========================
-# NuGet (packages are fetched on restore, not committed)
+# CMake generated files
 # ========================
-packages/
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+
+# ========================
+# NuGet (packages are fetched on restore, not commented)
+# ========================
+packages/*/
 *.nupkg
+*.snupkg
+.nuget/
 *.lock.json
 
 # ========================
-# Project-specific junk
+# Generated / backup
 # ========================
 imgui_backup/
-translate.py
-create_gitignore.ps1
 classgame/
+
+# ========================
+# Keep important source files
+# ========================
+!packages.config
+!CMakeLists.txt
+!README.md
+!*.cpp
+!*.h
+!*.hpp
+!*.c
+!*.cc
