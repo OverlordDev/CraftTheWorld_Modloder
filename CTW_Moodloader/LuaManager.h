@@ -28,6 +28,9 @@ public:
     void LoadScript(const std::string& path);
     void FireEvent(const std::string& eventName);
     void FireEventString(const std::string& eventName, const std::string& arg);
+    // Вызывает CTW._triggerEvent(eventName, arg) — диспатч через систему onEvent
+    void TriggerCTWEvent(const std::string& eventName, const std::string& arg);
+    void TriggerBlockEvent(int x, int y, int id);
 
     int AddTimer(int refId, float seconds, bool repeat);
 

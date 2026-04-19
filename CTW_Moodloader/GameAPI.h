@@ -98,3 +98,13 @@ using OnDestroyModsDialog_t = void(__thiscall*)(void* _this);
 extern ShowModsDialog_t fpShowModsDialogOriginal;
 extern OnDestroyModsDialog_t fpOnDestroyModsDialog;
 void __fastcall Hooked_ShowModsDialog(void* _this, void* edx);
+void* __fastcall Hooked_AddCreature(void* _this, void* edx, BaseString32 creatureName, const Vec2i* pPos, bool changeNameByTemplate, void** outObject);
+
+// Hooked CrashBlock
+typedef void(__thiscall* CrashBlock_t)(void* _this, int x, int y, int requiredBlockId, unsigned __int64 byWorkerGUID, unsigned __int64 entityGUID, char byNoNameWorker, bool allowDrops);
+extern CrashBlock_t fpCrashBlockOriginal;
+void __fastcall Hooked_CrashBlock(void* _this, void* edx, int x, int y, int requiredBlockId, unsigned __int64 byWorkerGUID, unsigned __int64 entityGUID, char byNoNameWorker, bool allowDrops);
+
+// Drop Item API
+typedef void* (__thiscall* CreateDynamicObjectRes_t)(void* _this, void* result_array, int resId, int recipeId, int count, float x, float y, int assignment);
+void DropItem(int resId, int count, float x, float y);

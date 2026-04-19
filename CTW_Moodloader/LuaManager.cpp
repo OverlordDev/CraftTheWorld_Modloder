@@ -133,3 +133,51 @@ void LuaManager::FireEventString(const std::string& eventName, const std::string
         lua_pop(L, 1);
     }
 }
+
+void LuaManager::TriggerCTWEvent(const std::string& eventName, const std::string& arg) {
+    if (!L) return;
+
+    // CTW._triggerEvent(eventName, arg)
+    lua_getglobal(L, "CTW");
+    if (!lua_istable(L, -1)) { lua_pop(L, 1); return; }
+
+    lua_getfield(L, -1, "_triggerEvent");
+    if (!lua_isfunction(L, -1)) { lua_pop(L, 2); return; }
+
+    lua_pushstring(L, eventName.c_str());
+    lua_pushstring(L, arg.c_str());
+
+    if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+        std::cerr << "[-] TriggerCTWEvent '" << eventName << "' error: "
+                  << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // pop CTW table
+}
+
+void LuaManager::TriggerBlockEvent(int x, int y, int id) {
+    if (!L) return;
+
+    lua_getglobal(L, "CTW");
+    if (!lua_istable(L, -1)) { lua_pop(L, 1); return; }
+
+    lua_getfield(L, -1, "_triggerEvent");
+    if (!lua_isfunction(L, -1)) { lua_pop(L, 2); return; }
+
+    lua_pushstring(L, "OnBlockCrashed");
+    
+    // Создаем таблицу {x=x, y=y, id=id}
+    lua_newtable(L);
+    lua_pushinteger(L, x);
+    lua_setfield(L, -2, "x");
+    lua_pushinteger(L, y);
+    lua_setfield(L, -2, "y");
+    lua_pushinteger(L, id);
+    lua_setfield(L, -2, "id");
+
+    if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+        std::cerr << "[-] Error in OnBlockCrashed event: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // pop CTW
+}

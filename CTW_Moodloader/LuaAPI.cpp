@@ -78,12 +78,19 @@ static int l_buildBlock(lua_State* L) {
     return 0;
 }
 
-// CTW.log(message)
-static int l_log(lua_State* L) {
-    const char* str = luaL_checkstring(L, 1);
-    std::cout << "[LuaLog] " << str << std::endl;
+// CTW.dropItem(id, count, x, y)
+static int l_dropItem(lua_State* L) {
+    if (lua_gettop(L) < 4) return luaL_error(L, "CTW.dropItem requires 4 arguments: id, count, x, y");
+    int id = luaL_checkinteger(L, 1);
+    int count = luaL_checkinteger(L, 2);
+    float x = (float)luaL_checknumber(L, 3);
+    float y = (float)luaL_checknumber(L, 4);
+
+    DropItem(id, count, x, y);
     return 0;
 }
+
+// CTW.log(message)
 
 // CTW.setTimeout(seconds, callback)
 static int l_setTimeout(lua_State* L) {
@@ -121,6 +128,7 @@ void RegisterLuaAPI(lua_State* L) {
     lua_pushcfunction(L, l_setDay); lua_setfield(L, -2, "setDay");
     lua_pushcfunction(L, l_setNight); lua_setfield(L, -2, "setNight");
     lua_pushcfunction(L, l_buildBlock); lua_setfield(L, -2, "buildBlock");
+    lua_pushcfunction(L, l_dropItem); lua_setfield(L, -2, "dropItem");
     lua_pushcfunction(L, l_log); lua_setfield(L, -2, "log");
     
     lua_pushcfunction(L, l_setTimeout); lua_setfield(L, -2, "setTimeout");
@@ -142,7 +150,9 @@ void RegisterLuaAPI(lua_State* L) {
         "    end\n"
         "end\n"
         "function CTW.onDayStart(cb) CTW.onEvent('DayStart', cb) end\n"
-        "function CTW.onNightStart(cb) CTW.onEvent('NightStart', cb) end\n";
+        "function CTW.onNightStart(cb) CTW.onEvent('NightStart', cb) end\n"
+        "function CTW.onCreatureSpawn(cb) CTW.onEvent('OnCreatureSpawn', cb) end\n"
+        "function CTW.onBlockCrashed(cb) CTW.onEvent('OnBlockCrashed', cb) end\n";
         
     luaL_dostring(L, bootScript);
 }

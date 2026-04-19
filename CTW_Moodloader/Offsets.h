@@ -17,6 +17,8 @@ namespace Offsets {
 	constexpr uintptr_t AIManagerInstance = 0xDC3614;
 	constexpr uintptr_t SpawnNewWorkers = 0x226750;
 	constexpr uintptr_t offset_AddCreature = 0x5AC950;
+	constexpr uintptr_t offset_CrashBlock = 0x82ABE0;
+	constexpr uintptr_t offset_CreateDynamicObjectRes = 0xC2E3E0;
 	constexpr uintptr_t offsetWorldInstance = 0xDE3BB0;
 	constexpr uintptr_t BuildBlock = 0x8260B0;
     constexpr uintptr_t offset_GetMonstersManagerInstance = 0xDC3D00;

@@ -91,6 +91,7 @@ Makefile
 !*.cc
 
 # ========================
-# Keep .lib files in packages (NuGet dependencies)
+# Keep .lib files in packages and dependencies (NuGet + external libs)
 # ========================
 !packages/**/*.lib
+!/CTW_Moodloader/imgui/examples/libs/**/*.lib

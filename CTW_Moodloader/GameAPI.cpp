@@ -5,6 +5,7 @@
 #include <MinHook.h>
 #include <cstring>
 #include "Menu.h"
+#include "LuaManager.h"
 #include "ModManager.h"
 
 // Typedef for Game::OnMouseClick
@@ -23,6 +24,8 @@ OnMouseClick_t fpOnMouseClickOriginal = nullptr;
 WorldOnMouseClick_t fpWorldOnMouseClickOriginal = nullptr;
 ShowModsDialog_t fpShowModsDialogOriginal = nullptr;
 OnDestroyModsDialog_t fpOnDestroyModsDialog = nullptr;
+AddCreature_hook_t fpAddCreatureOriginal = nullptr;
+CrashBlock_t fpCrashBlockOriginal = nullptr;
 
 typedef int(__thiscall* StartDialog_OnEvent_t)(void* pThis, void* eventObj);
 StartDialog_OnEvent_t fpStartDialog_OnEventOriginal = nullptr;
@@ -193,6 +196,39 @@ char __fastcall Hooked_WorldOnMouseClick(void* pWorld, void* edx, int x, int y) 
     return result;
 }
 
+// -------------------------------------------------------
+// AddCreature hook — logs every creature spawned in-game
+// -------------------------------------------------------
+void* __fastcall Hooked_AddCreature(
+    void* _this,
+    void* edx,
+    BaseString32 creatureName,
+    const Vec2i* pPos,
+    bool changeNameByTemplate,
+    void** outObject)
+{
+    // Read the name from our BaseString32 wrapper
+    const char* name = creatureName.size > 0 ? creatureName.buffer : "<unknown>";
+    int posX = pPos ? pPos->x : -1;
+    int posY = pPos ? pPos->y : -1;
+
+    printf("[AddCreature] '%s' at [%d, %d]\n", name, posX, posY);
+
+    // Огонь события в Lua: CTW.onCreatureSpawn(function(name) ... end)
+    LuaManager::GetInstance().TriggerCTWEvent("OnCreatureSpawn", name);
+
+    return fpAddCreatureOriginal(_this, creatureName, pPos, changeNameByTemplate, outObject);
+}
+
+void __fastcall Hooked_CrashBlock(void* _this, void* edx, int x, int y, int requiredBlockId, unsigned __int64 byWorkerGUID, unsigned __int64 entityGUID, char byNoNameWorker, bool allowDrops) {
+    printf("[CrashBlock] at [%d, %d] requiredBlockId: %d\n", x, y, requiredBlockId);
+
+    // Тригерим событие в Lua
+    LuaManager::GetInstance().TriggerBlockEvent(x, y, requiredBlockId);
+
+    fpCrashBlockOriginal(_this, x, y, requiredBlockId, byWorkerGUID, entityGUID, byNoNameWorker, allowDrops);
+}
+
 void InstallHooks(uintptr_t moduleBase) {
     LPVOID targetAddr = (LPVOID)(moduleBase + 0x3E7D10);
 
@@ -212,7 +248,7 @@ void InstallHooks(uintptr_t moduleBase) {
     else {
         printf("[-] Error: Failed to hook Game::OnMouseClick!\n");
     }
-    
+
     // Hook World::OnMouseClick
     uintptr_t offsetWorldOnMouseClick = 0x8484C0;
     if (MH_CreateHook((LPVOID)(moduleBase + offsetWorldOnMouseClick), &Hooked_WorldOnMouseClick, (LPVOID*)&fpWorldOnMouseClickOriginal) == MH_OK) {
@@ -222,10 +258,32 @@ void InstallHooks(uintptr_t moduleBase) {
     else {
         printf("[-] Error: Failed to hook World::OnMouseClick!\n");
     }
+
+    // Hook StartDialog::OnEvent (main menu button intercept)
     uintptr_t addrStartDialogOnEvent = moduleBase + 0x6C1450;
     if (MH_CreateHook((LPVOID)addrStartDialogOnEvent, &Hooked_StartDialog_OnEvent, (LPVOID*)&fpStartDialog_OnEventOriginal) == MH_OK) {
         MH_EnableHook((LPVOID)addrStartDialogOnEvent);
         printf("[+] Main Menu hook (StartDialog::OnEvent) active\n");
+    }
+
+    // Hook MonstersManager::AddCreature — log every creature spawned
+    LPVOID addrAddCreature = (LPVOID)(moduleBase + Offsets::offset_AddCreature);
+    if (MH_CreateHook(addrAddCreature, &Hooked_AddCreature, (LPVOID*)&fpAddCreatureOriginal) == MH_OK) {
+        MH_EnableHook(addrAddCreature);
+        printf("[+] AddCreature hook active (creature spawn logging enabled)\n");
+    }
+    else {
+        printf("[-] Error: Failed to hook AddCreature!\n");
+    }
+
+    // Hook World::CrashBlock
+    LPVOID addrCrashBlock = (LPVOID)(moduleBase + Offsets::offset_CrashBlock);
+    if (MH_CreateHook(addrCrashBlock, &Hooked_CrashBlock, (LPVOID*)&fpCrashBlockOriginal) == MH_OK) {
+        MH_EnableHook(addrCrashBlock);
+        printf("[+] CrashBlock hook active (block destruction logging/Lua enabled)\n");
+    }
+    else {
+        printf("[-] Error: Failed to hook CrashBlock!\n");
     }
 
     printf("[+] Modloader system initialized\n");
@@ -402,4 +460,23 @@ void SpawnSheep(uintptr_t moduleBase, int x, int y) {
     else {
         std::cout << "[-] Error: Failed to spawn sheep at [" << x << ", " << y << "]" << std::endl;
     }
+}
+
+void DropItem(int resId, int count, float x, float y) {
+    uintptr_t base = (uintptr_t)GetModuleHandle(NULL);
+    void* pWorld = *(void**)(base + Offsets::offsetWorldInstance);
+    if (!pWorld) return;
+
+    CreateDynamicObjectRes_t CreateFunc = (CreateDynamicObjectRes_t)(base + Offsets::offset_CreateDynamicObjectRes);
+
+    // Dummy array for iqArray<DynamicEntity*> result
+    // CTW's iqArray is ~24-32 bytes, using a buffer for safety
+    char dummyResult[256];
+    memset(dummyResult, 0, sizeof(dummyResult));
+
+    // recipeId = -1 (not from recipe)
+    // assignment = 0 (ASSIGN_COLLECT - makes dwarfs want to pick it up)
+    CreateFunc(pWorld, dummyResult, resId, -1, count, x, y, 0);
+
+    printf("[DropItem] ID: %d, Count: %d at [%.1f, %.1f]\n", resId, count, x, y);
 }
