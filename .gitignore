@@ -1,0 +1,59 @@
+# ========================
+# Visual Studio / IDE
+# ========================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+
+# ========================
+# Build output directories
+# ========================
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+
+# ========================
+# Compiled artifacts
+# ========================
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+*.dll
+*.exe
+
+# ========================
+# Log / temp files
+# ========================
+*.log
+*.tlog
+*.ncb
+*.aps
+*.tmp
+Thumbs.db
+.DS_Store
+
+# ========================
+# NuGet (packages are fetched on restore, not committed)
+# ========================
+packages/
+*.nupkg
+*.lock.json
+
+# ========================
+# Project-specific junk
+# ========================
+imgui_backup/
+translate.py
+create_gitignore.ps1
+classgame/

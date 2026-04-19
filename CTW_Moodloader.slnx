@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CTW_Moodloader/CTW_Moodloader.vcxproj" Id="68e43533-244c-441f-84e8-d92de714b183" />
+</Solution>
