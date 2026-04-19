@@ -61,12 +61,11 @@ CMakeFiles/
 Makefile
 
 # ========================
-# NuGet (packages are fetched on restore, not commented)
+# NuGet (keep packages for direct compilation)
 # ========================
-packages/*/
+.nuget/
 *.nupkg
 *.snupkg
-.nuget/
 *.lock.json
 
 # ========================
