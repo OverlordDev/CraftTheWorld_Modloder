@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DataAPI.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameAPI.h" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -198,11 +199,13 @@
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="ModManager.h" />
+    <ClInclude Include="ModStructures.h" />
     <ClInclude Include="Offsets.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataAPI.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

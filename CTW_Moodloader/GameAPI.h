@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include "ModStructures.h"
 struct StringStorage {
     char junk[64];
 };
@@ -108,3 +109,11 @@ void __fastcall Hooked_CrashBlock(void* _this, void* edx, int x, int y, int requ
 // Drop Item API
 typedef void* (__thiscall* CreateDynamicObjectRes_t)(void* _this, void* result_array, int resId, int recipeId, int count, float x, float y, int assignment);
 void DropItem(int resId, int count, float x, float y);
+
+// Property API
+void SetPropertyValue(uintptr_t moduleBase, void* pProperties, int propEnum, int ruleEnum, float value);
+
+// Hooked SetPropertyValue
+typedef void(__thiscall* SetPropertyValue_raw_t)(void* _this, int prop, int rule, SimpleVariant value);
+extern SetPropertyValue_raw_t fpSetPropertyValueOriginal;
+void __fastcall Hooked_SetPropertyValue(void* _this, void* edx, int prop, int rule, SimpleVariant value);

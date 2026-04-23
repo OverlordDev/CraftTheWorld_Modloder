@@ -26,6 +26,7 @@ ShowModsDialog_t fpShowModsDialogOriginal = nullptr;
 OnDestroyModsDialog_t fpOnDestroyModsDialog = nullptr;
 AddCreature_hook_t fpAddCreatureOriginal = nullptr;
 CrashBlock_t fpCrashBlockOriginal = nullptr;
+SetPropertyValue_raw_t fpSetPropertyValueOriginal = nullptr;
 
 typedef int(__thiscall* StartDialog_OnEvent_t)(void* pThis, void* eventObj);
 StartDialog_OnEvent_t fpStartDialog_OnEventOriginal = nullptr;
@@ -229,6 +230,18 @@ void __fastcall Hooked_CrashBlock(void* _this, void* edx, int x, int y, int requ
     fpCrashBlockOriginal(_this, x, y, requiredBlockId, byWorkerGUID, entityGUID, byNoNameWorker, allowDrops);
 }
 
+void __fastcall Hooked_SetPropertyValue(void* _this, void* edx, int prop, int rule, SimpleVariant value) {
+    const char* strVal = value.m_string.c_str();
+    if (value.m_type == 5) { // Assuming 5 is string based on common patterns
+        printf("[SetProp] %p Prop:%d Rule:%d Val:\"%s\" (String)\n", _this, prop, rule, strVal);
+    } else {
+        printf("[SetProp] %p Prop:%d Rule:%d Val:%f (Int/Float:%d)\n", _this, prop, rule, value.m_float, value.m_int);
+    }
+
+    // Call original
+    fpSetPropertyValueOriginal(_this, prop, rule, value);
+}
+
 void InstallHooks(uintptr_t moduleBase) {
     LPVOID targetAddr = (LPVOID)(moduleBase + 0x3E7D10);
 
@@ -284,6 +297,16 @@ void InstallHooks(uintptr_t moduleBase) {
     }
     else {
         printf("[-] Error: Failed to hook CrashBlock!\n");
+    }
+
+    // Hook Properties::SetPropertyValue
+    LPVOID addrSetProp = (LPVOID)(moduleBase + Offsets::offset_SetPropertyValue);
+    if (MH_CreateHook(addrSetProp, &Hooked_SetPropertyValue, (LPVOID*)&fpSetPropertyValueOriginal) == MH_OK) {
+        MH_EnableHook(addrSetProp);
+        printf("[+] SetPropertyValue hook active\n");
+    }
+    else {
+        printf("[-] Error: Failed to hook SetPropertyValue!\n");
     }
 
     printf("[+] Modloader system initialized\n");
@@ -479,4 +502,18 @@ void DropItem(int resId, int count, float x, float y) {
     CreateFunc(pWorld, dummyResult, resId, -1, count, x, y, 0);
 
     printf("[DropItem] ID: %d, Count: %d at [%.1f, %.1f]\n", resId, count, x, y);
+}
+
+// -------------------------------------------------------
+// Property API (SetPropertyValue wrapper)
+// -------------------------------------------------------
+typedef void(__thiscall* SetPropertyValue_t)(void* pProperties, int propEnum, int ruleEnum, float value);
+
+void SetPropertyValue(uintptr_t moduleBase, void* pProperties, int propEnum, int ruleEnum, float value) {
+    if (!pProperties) return;
+
+    SetPropertyValue_t SetPropFunc = (SetPropertyValue_t)(moduleBase + Offsets::offset_SetPropertyValue);
+    SetPropFunc(pProperties, propEnum, ruleEnum, value);
+    
+    printf("[Property] Set Property %d to %f (Rule %d)\n", propEnum, value, ruleEnum);
 }

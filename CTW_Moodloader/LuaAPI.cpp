@@ -4,6 +4,7 @@
 #include "GameAPI.h"
 #include <iostream>
 #include "Offsets.h"
+#include "DataAPI.h"
 
 #include "lua_src/lua.h"
 #include "lua_src/lauxlib.h"
@@ -91,6 +92,11 @@ static int l_dropItem(lua_State* L) {
 }
 
 // CTW.log(message)
+static int l_log(lua_State* L) {
+    const char* str = luaL_checkstring(L, 1);
+    std::cout << "[LuaLog] " << str << std::endl;
+    return 0;
+}
 
 // CTW.setTimeout(seconds, callback)
 static int l_setTimeout(lua_State* L) {
@@ -134,8 +140,6 @@ void RegisterLuaAPI(lua_State* L) {
     lua_pushcfunction(L, l_setTimeout); lua_setfield(L, -2, "setTimeout");
     lua_pushcfunction(L, l_setInterval); lua_setfield(L, -2, "setInterval");
 
-    // function CTW._triggerEvent(name, arg) ... end
-    
     lua_setglobal(L, "CTW");
     
     const char* bootScript = 
@@ -155,4 +159,7 @@ void RegisterLuaAPI(lua_State* L) {
         "function CTW.onBlockCrashed(cb) CTW.onEvent('OnBlockCrashed', cb) end\n";
         
     luaL_dostring(L, bootScript);
+
+    // Register Data API
+    RegisterDataAPI(L);
 }
